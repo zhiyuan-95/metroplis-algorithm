@@ -52,19 +52,20 @@ def correlation(tickers,start,end):
     return C
 t1 = 2020
 t2 = 2022
-Ticker = ['TQQQ','JD','BABA','LMT','DOG']
-iter = len(Ticker)*20000
+Ticker = ['TQQQ','FXP','JD','BABA','DOG']
+iter = len(Ticker)*30000
 #['VTI','VOO','VYM','VTV','VNQ','VEA','VWO','BND','VCIT','MGC']
 
 #['TQQQ','FXP','JD','BABA','DOG']
-get_stocks(Ticker, t1, t2)
+#get_stocks(Ticker, t1, t2)
 start_time = time.time()
 number_of_stocks = len(Ticker)
 C = correlation(Ticker,t1,t2)
 m = Returns(Ticker,t1,t2)
-w = np.array([round(1/len(Ticker),3) for x in Ticker])
+w = np.array([0. for x in Ticker])
+w[0] = 1.
 OldEnerge = 100
-T = 0.05
+T = 0.01
 m = np.array(m)
 risk = []
 mu = []
@@ -73,20 +74,26 @@ RETURN = 0
 RISK = 0
 W = []
 step = 0.01
+l = len(Ticker)
 for x in range(iter):
-    i = random.randrange(0,number_of_stocks)
-    j = i
-    while i==j:
-        j = random.randrange(0,number_of_stocks)
-        if w[j]<0.001:
-            j=i
+    pick = random.randrange(0,l)
+    if w[pick]>=0.01:
+        j = pick
+        i = random.randrange(0,l)
+        while i==j:
+            i= random.randrange(0,l)
+    if w[pick]<0.01:
+        i = pick
+        j = random.randrange(0,l)
+        while w[j]<=0:
+            j = random.randrange(0,l)
     w[i]+=step
     w[j]-=step
     varience = np.dot(np.dot(w,C),w.T)
     std = math.sqrt(varience)
 
     r = np.dot(w,m.T)
-    returnOverRisk = (r-0.004)/std
+    returnOverRisk = (r-0.02)/(std)
     NewEnerge = -returnOverRisk
     deltaEnerge = NewEnerge-OldEnerge
     if deltaEnerge<0:
@@ -105,24 +112,15 @@ for x in range(iter):
         W = w
         risk.append(std)
         mu.append(r)
-    if x%2000==0:
-        if x%4000==0:
-            print(x,(RETURN-0.004)/RISK)
-        risk.append(std)
-        mu.append(r)
+    if x%10000==0:
+        print(x,(RETURN-0.02)/(RISK))
 
-print('weight: ',W)
-for x in W:
-    if x>0.05:
-        id = W.tolist().index(x)
-        print(Ticker[id],round(x,4))
+W = [round(x,3) for x in W]
+show = pd.DataFrame(columns = Ticker, index = ['weight'])
+show.loc['weight'] = W
+print(show)
 print('risk_over_return: ',(RETURN-0.004)/RISK)
 print(' expected return: ', RETURN)
 print('             std: ', RISK)
 print("--- %s seconds ---" % (time.time() - start_time))
-pyplot.scatter(risk,mu,s=3)
-pyplot.scatter(RISK,RETURN,color = 'red')
-pyplot.xlabel('risk')
-pyplot.ylabel('return')
-pyplot.show()
-print('python metro_ror.py')
+print('python portfolio_optimizer.py')
