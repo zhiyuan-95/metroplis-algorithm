@@ -53,7 +53,7 @@ def correlation(tickers,start,end):
 t1 = 2020
 t2 = 2022
 Ticker = ['TQQQ','FXP','JD','BABA','DOG']
-iter = len(Ticker)*30000
+iter = len(Ticker)*20000
 #['VTI','VOO','VYM','VTV','VNQ','VEA','VWO','BND','VCIT','MGC']
 
 #['TQQQ','FXP','JD','BABA','DOG']
